@@ -1,6 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const fs = require('fs');
+const cors = require('cors');
+const PORT = process.env.PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
 
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
@@ -42,6 +48,6 @@ app.get('/video', function (req, res) {
   videoStream.pipe(res);
 });
 
-app.listen(8000, function () {
-  console.log('Listening on port 8000!');
+app.listen(PORT, function () {
+  console.log(`Listening on port ${PORT}!`);
 });
