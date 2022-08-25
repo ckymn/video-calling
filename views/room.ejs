@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Jotform Vide Stream</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script>
+      const ROOM_ID = '<%=roomId%>';
+      // socket connection to the server from browser
+      let socket = io();
+      // Peerjs connection to the server from browser
+      const peerServer = new Peer(undefined, {
+        host: 'localhost',
+        port: 3000,
+        path: '/peerjs',
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="video-grid"></div>
+    <script src="script.js"></script>
+  </body>
+</html>
