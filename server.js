@@ -36,6 +36,11 @@ io.on('connection', (socket) => {
   // listen the room on the browser.
   socket.on('join-room', (roomId, userId) => {
     socket.join(roomId);
+    // stream to everyobody
     socket.broadcast.emit('user-connected', userId); // io.sockets.emit('join-room',data)
+    //listen the message on the browser
+    socket.on('message', (message) => {
+      socket.emit('createMessage', { message, userId });
+    });
   });
 });
