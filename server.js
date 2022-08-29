@@ -1,46 +1,50 @@
 require('dotenv').config();
 const express = require('express');
-const socket = require('socket.io');
-const { ExpressPeerServer } = require('peer');
-const { v4: uuid4 } = require('uuid');
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-app.set('view engine', 'ejs');
-app.use(express.static('public'));
-
-app.get('/', (req, res) => {
-  res.redirect(`/${uuid4()}`);
+const server = require('http').Server(app);
+const { v4: uuidv4 } = require('uuid');
+const io = require('socket.io')(server, {
+  cors: {
+    origin: '*',
+  },
 });
-
-app.get('/:room', (req, res) => {
-  const { room } = req.params;
-  res.render('room', { roomId: room });
-});
-
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on ${PORT}`);
-});
-
-// socket.io
-
-const io = socket(server);
+const { ExpressPeerServer } = require('peer');
 const peerServer = ExpressPeerServer(server, {
   debug: true,
 });
+const PORT = process.env.PORT || 5000;
 
+app.set('view engine', 'ejs');
 app.use('/peerjs', peerServer);
+app.use(express.static('public'));
+
+app.get('/', (req, res) => {
+  res.redirect(`/${uuidv4()}`);
+});
+
+app.get('/:room', (req, res) => {
+  res.render('room', { roomId: req.params.room });
+});
 
 // connection socket.io
 io.on('connection', (socket) => {
   // listen the room on the browser.
-  socket.on('join-room', (roomId, userId) => {
+  socket.on('join-room', (roomId, userId, userName) => {
     socket.join(roomId);
     // stream to everyobody
-    socket.broadcast.emit('user-connected', userId); // io.sockets.emit('join-room',data)
-    //listen the message on the browser
+    socket.broadcast.to(roomId).emit('user-connected', userId);
+    // listen the message on the browser.
     socket.on('message', (message) => {
-      socket.emit('createMessage', { message, userId });
+      io.to(roomId).emit('createMessage', message, userName);
     });
   });
+
+  // // unlisten the room on the browser.
+  // socket.on('disconnect', () => {
+  //   socket.to(roomId).broadcast.emit('user-disconnected', userId);
+  // });
+});
+
+server.listen(PORT, () => {
+  console.log(`Server is running on ${PORT}`);
 });
