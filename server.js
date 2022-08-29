@@ -28,12 +28,12 @@ app.get('/:room', (req, res) => {
 
 // connection socket.io
 io.on('connection', (socket) => {
-  // listen the room on the browser.
+  // listen the room from the browser.
   socket.on('join-room', (roomId, userId, userName) => {
     socket.join(roomId);
     // stream to everyobody
     socket.broadcast.to(roomId).emit('user-connected', userId);
-    // listen the message on the browser.
+    // listen the message from the browser.
     socket.on('message', (message) => {
       io.to(roomId).emit('createMessage', message, userName);
     });

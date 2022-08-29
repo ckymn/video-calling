@@ -38,12 +38,14 @@ navigator.mediaDevices
       });
     });
 
+    // listen the user-connected broadcast from the server(socket)
     socket.on('user-connected', (userId) => {
       connectToNewUser(userId, stream);
     });
   });
 
 const connectToNewUser = (userId, stream) => {
+  // add new video stream with peer connection(webRTC)
   const call = peer.call(userId, stream);
   const video = document.createElement('video');
   call.on('stream', (userVideoStream) => {
@@ -76,6 +78,7 @@ send.addEventListener('click', (e) => {
 
 text.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && text.value.length !== 0) {
+    // create new message on browser
     socket.emit('message', text.value);
     text.value = '';
   }
