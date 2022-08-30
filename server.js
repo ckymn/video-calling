@@ -3,16 +3,13 @@ const express = require('express');
 const app = express();
 const server = require('http').Server(app);
 const { v4: uuidv4 } = require('uuid');
-const io = require('socket.io')(server, {
-  cors: {
-    origin: '*',
-  },
-});
+const io = require('socket.io')(server);
+const PORT = process.env.PORT || 5000;
+// webrtc
 const { ExpressPeerServer } = require('peer');
 const peerServer = ExpressPeerServer(server, {
   debug: true,
 });
-const PORT = process.env.PORT || 5000;
 
 app.set('view engine', 'ejs');
 app.use('/peerjs', peerServer);
@@ -39,10 +36,10 @@ io.on('connection', (socket) => {
     });
   });
 
-  // // unlisten the room on the browser.
-  // socket.on('disconnect', () => {
-  //   socket.to(roomId).broadcast.emit('user-disconnected', userId);
-  // });
+  //error socket.io
+  socket.on('connect_error', (err) => {
+    console.log(`connect_error due to ${err.message}`);
+  });
 });
 
 server.listen(PORT, () => {
