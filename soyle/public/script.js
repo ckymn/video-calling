@@ -2,7 +2,6 @@ const videoGrid = document.getElementById('video-grid');
 const myVideo = document.createElement('video');
 const showChat = document.querySelector('#showChat');
 const backBtn = document.querySelector('.header__back');
-const userList = [];
 myVideo.muted = true;
 
 backBtn.addEventListener('click', () => {
@@ -30,6 +29,19 @@ navigator.mediaDevices
   .then((stream) => {
     myVideoStream = stream;
     addVideoStream(myVideo, stream);
+
+    peer.on('call', (call) => {
+      call.answer(stream);
+      const video = document.createElement('video');
+      call.on('stream', (userVideoStream) => {
+        addVideoStream(video, userVideoStream);
+      });
+    });
+
+    // listen the user-connected broadcast from the server(socket)
+    socket.on('user-connected', (userId) => {
+      connectToNewUser(userId, stream);
+    });
   });
 
 const connectToNewUser = (userId, stream) => {
@@ -42,35 +54,7 @@ const connectToNewUser = (userId, stream) => {
 };
 
 peer.on('open', (id) => {
-  console.log('peer icine girdi');
   socket.emit('join-room', ROOM_ID, id, user);
-});
-
-socket.emit('join-room', { ROOM_ID, user });
-
-socket.on('user-connected', (data) => {
-  userList.push(data);
-  console.log(`${data.userName} is connected client`);
-});
-
-socket.on('user-disconnected', (data) => {
-  console.log(`${data.userName} is disconnected client`);
-
-  const index = userList.findIndex((i) => i.userId === data.userId);
-  if (index !== -1) {
-    userList.splice(index, 1);
-  }
-});
-
-socket.on('createMessage', (message, userName) => {
-  messages.innerHTML =
-    messages.innerHTML +
-    `<div class="message">
-        <b><i class="far fa-user-circle"></i> <span> ${
-          userName === user ? 'me' : userName
-        }</span> </b>
-        <span>${message}</span>
-    </div>`;
 });
 
 const addVideoStream = (video, stream) => {
@@ -140,4 +124,15 @@ inviteButton.addEventListener('click', (e) => {
     'Copy this link and send it to people you want to meet with',
     window.location.href
   );
+});
+
+socket.on('createMessage', (message, userName) => {
+  messages.innerHTML =
+    messages.innerHTML +
+    `<div class="message">
+        <b><i class="far fa-user-circle"></i> <span> ${
+          userName === user ? 'me' : userName
+        }</span> </b>
+        <span>${message}</span>
+    </div>`;
 });
